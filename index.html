@@ -232,7 +232,7 @@
     const curriculum = [
         { name: "Mod 1", pool: ["f1f f2f f3f f4f 1234 4321 1423 3241 f432f", "1122 3344 4132 2314 4312 f143f"] },
         { name: "Mod 2", pool: ["j7j j8j j9j j0j 7890 0987 7089 9870 j098j", "7788 9900 7098 8970 0879 j709j"] },
-        { name: "Mod 3", pool: ["(123) [456] {789} [(0)] ([78]) {[12]}", "if(x == 1) { return; } else { balance(90); }"] },
+        { name: "Mod 3", pool: ["(123) {789} [(0)] () {}", "if(x == 1) { return; } else { balance(90); }"] },
         { name: "Mod 4", pool: ["para. no. 14, page: 23; section: 40,", "dated: 12.08.2024; ref: 89, sub-clause: 4;"] },
         { name: "Mod 5", pool: ["#302 @ $450 % & * _ + = - !~", "hash #1, id: @user_9, balance: $99, growth: +15%"] },
         { name: "Mod 6", pool: ["In Writ Petition No. 4519 of 2024, Hon'ble Bench cleared Section 34/406 on 19-05-2025.", "The Appellant paid Rs. 75,000/- via Notice No. 892/2026 under Clause (4) of Article 226."] }
@@ -295,3 +295,86 @@
 
     inputCatcher.addEventListener("input", (e) => {
         const val = e.target.value;
+        if (!timerStart && val.length > 0) timerStart = new Date();
+const spans = textTargetBox.querySelectorAll(".char");
+// Force backward correction path integration
+if (val.length < cursorIdx) {
+cursorIdx = val.length;
+currentStreak = 0;
+refreshCursorState(spans);
+return;
+}
+const typedStr = val[val.length - 1];
+const goalStr = rawText[cursorIdx];
+structuralKeystrokes++;
+if (typedStr === goalStr) {
+spans[cursorIdx].className = "char correct";
+cursorIdx++;
+currentStreak++;
+} else {
+spans[cursorIdx].className = "char wrong";
+mistakes++;
+currentStreak = 0;
+// Register targeting failure in cognitive engine profile
+profile.wrongKeyMetrics[goalStr] = (profile.wrongKeyMetrics[goalStr] || 0) + 1;
+saveProfileToDisk();
+cursorIdx++;
+}
+if (cursorIdx >= rawText.length) {
+profile.allTimeCompleted++;
+saveProfileToDisk();
+setTimeout(() => {
+alert("Motor Sequence Module successfully registered!");
+resetModule();
+}, 200);
+} else {
+refreshCursorState(spans);
+}
+updateStatsUI();
+});
+function refreshCursorState(spans) {
+spans.forEach((span, idx) => {
+if (idx === cursorIdx) {
+span.className = "char current";
+} else if (idx > cursorIdx) {
+span.className = "char";
+}
+});
+}
+function updateStatsUI() {
+document.getElementById("stat-streak").textContent = currentStreak;
+document.getElementById("stat-alltime").textContent = profile.allTimeCompleted;
+const accuracy = structuralKeystrokes > 0 ? Math.round(((structuralKeystrokes - mistakes) / structuralKeystrokes) * 100) : 100;
+document.getElementById("stat-acc").textContent = ${Math.max(0, accuracy)}%;
+if (timerStart) {
+const minutesElapsed = (new Date() - timerStart) / 60000;
+if (minutesElapsed > 0.01) {
+const calculatedWpm = Math.round(((structuralKeystrokes / 5) - mistakes) / minutesElapsed);
+document.getElementById("stat-wpm").textContent = Math.max(0, calculatedWpm);
+}
+} else {
+document.getElementById("stat-wpm").textContent = "0";
+}
+// Render adaptive system layout metrics
+const weakList = document.getElementById("weak-keys-list");
+weakList.innerHTML = "";
+const sortedWeakKeys = Object.entries(profile.wrongKeyMetrics)
+.sort((a, b) => b - a)
+.slice(0, 5);
+if(sortedWeakKeys.length > 0) {
+document.getElementById("analytics-feedback").textContent = "Highest priority neuromuscular target keys:";
+sortedWeakKeys.forEach(([key, val]) => {
+const badge = document.createElement("span");
+badge.className = "key-badge";
+badge.textContent = '${key}' (${val} missed);
+weakList.appendChild(badge);
+});
+}
+}
+function saveProfileToDisk() {
+localStorage.setItem('neurotype_profile', JSON.stringify(profile));
+}
+// Initialize environment
+resetModule();
+window.addEventListener("click", focusCatcher);
+
