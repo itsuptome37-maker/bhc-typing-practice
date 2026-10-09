@@ -194,7 +194,6 @@
 <div class="dashboard">
     <div class="header-panel">
         <h1>NeuroType // Scientific Key Training</h1>
-        <div style="font-size: 0.85rem; color: var(--text-dim);" id="session-timestamp"></div>
     </div>
 
     <div class="grid-layout">
@@ -296,3 +295,94 @@
         const val = e.target.value;
         if (!timerStart && val.length > 0) timerStart = new Date();
 
+        const spans = textTargetBox.querySelectorAll(".char");
+
+        if (val.length < cursorIdx) {
+            cursorIdx = val.length;
+            currentStreak = 0;
+            refreshCursorState(spans);
+            return;
+        }
+
+        const typedStr = val[val.length - 1];
+        const goalStr = rawText[cursorIdx];
+        structuralKeystrokes++;
+
+        if (typedStr === goalStr) {
+            spans[cursorIdx].className = "char correct";
+            cursorIdx++;
+            currentStreak++;
+        } else {
+            spans[cursorIdx].className = "char wrong";
+            mistakes++;
+            currentStreak = 0;
+            profile.wrongKeyMetrics[goalStr] = (profile.wrongKeyMetrics[goalStr] || 0) + 1;
+            saveProfileToDisk();
+            cursorIdx++;
+        }
+
+        if (cursorIdx >= rawText.length) {
+            profile.allTimeCompleted++;
+            saveProfileToDisk();
+            setTimeout(() => {
+                alert("Motor Sequence Module successfully registered!");
+                resetModule();
+            }, 200);
+        } else {
+            refreshCursorState(spans);
+        }
+        updateStatsUI();
+    });
+
+    function refreshCursorState(spans) {
+        spans.forEach((span, idx) => {
+            if (idx === cursorIdx) {
+                span.className = "char current";
+            } else if (idx > cursorIdx) {
+                span.className = "char";
+            }
+        });
+    }
+
+    function updateStatsUI() {
+        document.getElementById("stat-streak").textContent = currentStreak;
+        document.getElementById("stat-alltime").textContent = profile.allTimeCompleted;
+        const accuracy = structuralKeystrokes > 0 ? Math.round(((structuralKeystrokes - mistakes) / structuralKeystrokes) * 100) : 100;
+        document.getElementById("stat-acc").textContent = `${Math.max(0, accuracy)}%`;
+
+        if (timerStart) {
+            const minutesElapsed = (new Date() - timerStart) / 60000;
+            if (minutesElapsed > 0.01) {
+                const calculatedWpm = Math.round(((structuralKeystrokes / 5) - mistakes) / minutesElapsed);
+                document.getElementById("stat-wpm").textContent = Math.max(0, calculatedWpm);
+            }
+        } else {
+            document.getElementById("stat-wpm").textContent = "0";
+        }
+
+        const weakList = document.getElementById("weak-keys-list");
+        weakList.innerHTML = "";
+        const sortedWeakKeys = Object.entries(profile.wrongKeyMetrics)
+            .sort((a, b) => b - a)
+            .slice(0, 5);
+
+        if(sortedWeakKeys.length > 0) {
+            document.getElementById("analytics-feedback").textContent = "Highest priority neuromuscular target keys:";
+            sortedWeakKeys.forEach(([key, val]) => {
+                const badge = document.createElement("span");
+                badge.className = "key-badge";
+                badge.textContent = `'${key}' (${val} missed)`;
+                weakList.appendChild(badge);
+            });
+        }
+    }
+
+    function saveProfileToDisk() {
+        localStorage.setItem('neurotype_profile', JSON.stringify(profile));
+    }
+
+    resetModule();
+    window.addEventListener("click", focusCatcher);
+</script>
+</body>
+</html>
