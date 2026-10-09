@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroType: Advanced Motor-Skill Typing Platform</title>
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --panel-bg: #131c2e;
+            --accent-blue: #38bdf8;
+            --accent-purple: #a855f7;
+            --text-bright: #f8fafc;
+            --text-dim: #64748b;
+            --correct-green: #22c55e;
+            --error-red: #ef4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-bright);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .dashboard {
+            max-width: 1000px;
+            width: 100%;
+            background: var(--panel-bg);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .header-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #1e293b;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 25px;
+        }
+
+        .sidebar {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #1e293b;
+        }
+
+        .curriculum-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .lesson-btn {
+            width: 100%;
+            text-align: left;
+            background: transparent;
+            color: var(--text-bright);
+            border: 1px solid transparent;
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .lesson-btn:hover {
+            background: #1e293b;
+            border-color: var(--accent-blue);
+        }
+
+        .lesson-btn.active {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(168, 85, 247, 0.2));
+            border-color: var(--accent-blue);
+        }
+
+        .main-panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stats-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #1e293b;
+        }
+
+        .stat-val {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: var(--accent-blue);
+        }
+
+        .stat-lbl {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .display-container {
+            position: relative;
+            background: #0f172a;
+            padding: 25px;
+            border-radius: 10px;
+            min-height: 80px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.5rem;
+            line-height: 2.2rem;
+            letter-spacing: 1.5px;
+            word-wrap: break-word;
+            border: 1px solid #1e293b;
+            margin-bottom: 20px;
+        }
+
+        .char { color: #475569; position: relative; }
+        .char.current { background: #1e293b; border-bottom: 3px solid var(--accent-purple); color: var(--text-bright); }
+        .char.correct { color: var(--correct-green); }
+        .char.wrong { color: var(--error-red); background: rgba(239, 68, 68, 0.15); }
+
+        .hidden-input {
+            position: absolute;
+            opacity: 0;
+            z-index: -1;
+        }
+
+        .analytics-box {
+            background: #0f172a;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 0.9rem;
+            border: 1px solid #1e293b;
+        }
+
+        .analytics-title {
+            color: var(--accent-purple);
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .weak-keys-container {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+
+        .key-badge {
+            background: #1e293b;
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid #334155;
+            color: var(--error-red);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div class="header-panel">
+        <h1>NeuroType // Scientific Key Training</h1>
+        <div style="font-size: 0.85rem; color: var(--text-dim);" id="session-timestamp"></div>
+    </div>
+
+    <div class="grid-layout">
+        <div class="sidebar">
+            <div class="curriculum-title">Motor Memory Chains</div>
+            <button class="lesson-btn active" onclick="loadLesson(0)">Mod 1: Anchor Reach (1, 2, 3, 4)</button>
+            <button class="lesson-btn" onclick="loadLesson(1)">Mod 2: Anchor Reach (7, 8, 9, 0)</button>
+            <button class="lesson-btn" onclick="loadLesson(2)">Mod 3: Structural Brackets [ { ( ) } ]</button>
+            <button class="lesson-btn" onclick="loadLesson(3)">Mod 4: Punctuation Matrices (, . ; :)</button>
+            <button class="lesson-btn" onclick="loadLesson(4)">Mod 5: Technical Special Chars</button>
+            <button class="lesson-btn" onclick="loadLesson(5)">Mod 6: BHC Comprehensive Legal</button>
+        </div>
+
+        <div class="main-panel">
+            <div class="stats-strip">
+                <div class="stat-card"><div class="stat-val" id="stat-wpm">0</div><div class="stat-lbl">Net WPM</div></div>
+                <div class="stat-card"><div class="stat-val" id="stat-acc">100%</div><div class="stat-lbl">Accuracy</div></div>
+                <div class="stat-card"><div class="stat-val" id="stat-streak">0</div><div class="stat-lbl">Streak Count</div></div>
+                <div class="stat-card"><div class="stat-val" id="stat-alltime">0</div><div class="stat-lbl">Total Completed</div></div>
+            </div>
+
+            <div class="display-container" id="text-target-box" onclick="focusCatcher()"></div>
+            <input type="text" id="input-catcher" class="hidden-input" autocomplete="off" autocapitalize="off">
+
+            <div class="analytics-box">
+                <div class="analytics-title">Adaptive Engine Statistics</div>
+                <div id="analytics-feedback">Keep typing to build your real-time muscle memory profile...</div>
+                <div class="weak-keys-container" id="weak-keys-list"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const curriculum = [
+        { name: "Mod 1", pool: ["f1f f2f f3f f4f 1234 4321 1423 3241 f432f", "1122 3344 4132 2314 4312 f143f"] },
+        { name: "Mod 2", pool: ["j7j j8j j9j j0j 7890 0987 7089 9870 j098j", "7788 9900 7098 8970 0879 j709j"] },
+        { name: "Mod 3", pool: ["(123) [456] {789} [(0)] ([78]) {[12]}", "if(x == 1) { return; } else { balance(90); }"] },
+        { name: "Mod 4", pool: ["para. no. 14, page: 23; section: 40,", "dated: 12.08.2024; ref: 89, sub-clause: 4;"] },
+        { name: "Mod 5", pool: ["#302 @ $450 % & * _ + = - !~", "hash #1, id: @user_9, balance: $99, growth: +15%"] },
+        { name: "Mod 6", pool: ["In Writ Petition No. 4519 of 2024, Hon'ble Bench cleared Section 34/406 on 19-05-2025.", "The Appellant paid Rs. 75,000/- via Notice No. 892/2026 under Clause (4) of Article 226."] }
+    ];
+
+    let currentLessonIdx = 0;
+    let rawText = "";
+    let cursorIdx = 0;
+    let mistakes = 0;
+    let structuralKeystrokes = 0;
+    let timerStart = null;
+    let currentStreak = 0;
+
+    // Persistent storage profile
+    let profile = JSON.parse(localStorage.getItem('neurotype_profile')) || {
+        allTimeCompleted: 0,
+        wrongKeyMetrics: {}
+    };
+
+    const textTargetBox = document.getElementById("text-target-box");
+    const inputCatcher = document.getElementById("input-catcher");
+
+    function loadLesson(idx) {
+        currentLessonIdx = idx;
+        document.querySelectorAll(".lesson-btn").forEach((btn, i) => {
+            btn.classList.toggle("active", i === idx);
+        });
+        resetModule();
+    }
+
+    function resetModule() {
+        const pool = curriculum[currentLessonIdx].pool;
+        rawText = pool[Math.floor(Math.random() * pool.length)];
+        cursorIdx = 0;
+        mistakes = 0;
+        structuralKeystrokes = 0;
+        currentStreak = 0;
+        timerStart = null;
+        inputCatcher.value = "";
+        
+        buildDisplayUI();
+        updateStatsUI();
+        focusCatcher();
+    }
+
+    function buildDisplayUI() {
+        textTargetBox.innerHTML = "";
+        [...rawText].forEach((char, i) => {
+            const span = document.createElement("span");
+            span.textContent = char;
+            span.className = "char";
+            if (i === 0) span.classList.add("current");
+            textTargetBox.appendChild(span);
+        });
+    }
+
+    function focusCatcher() {
+        inputCatcher.focus();
+    }
+
+    inputCatcher.addEventListener("input", (e) => {
+        const val = e.target.value;
