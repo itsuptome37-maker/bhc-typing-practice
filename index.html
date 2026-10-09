@@ -345,7 +345,7 @@ function updateStatsUI() {
 document.getElementById("stat-streak").textContent = currentStreak;
 document.getElementById("stat-alltime").textContent = profile.allTimeCompleted;
 const accuracy = structuralKeystrokes > 0 ? Math.round(((structuralKeystrokes - mistakes) / structuralKeystrokes) * 100) : 100;
-document.getElementById("stat-acc").textContent = ${Math.max(0, accuracy)}%;
+document.getElementById("stat-acc").textContent = `${Math.max(0, accuracy)}%`;
 if (timerStart) {
 const minutesElapsed = (new Date() - timerStart) / 60000;
 if (minutesElapsed > 0.01) {
